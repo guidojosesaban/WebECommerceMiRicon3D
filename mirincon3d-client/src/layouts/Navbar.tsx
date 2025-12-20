@@ -9,8 +9,11 @@ export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { cartCount, toggleCart } = useCart();
   const navigate = useNavigate();
-console.log("Datos del usuario:", user); // <--- AGREGA ESTO
-console.log("Rol actual:", user?.role); // <--- Y ESTO
+
+  // Valores por defecto para evitar errores
+  const displayName = user?.full_name || 'Usuario';
+  const displayEmail = user?.email || '';
+  const firstLetter = displayName.charAt(0).toUpperCase();
 
   return (
     <BSNavbar bg="white" expand="lg" className="shadow-sm sticky-top py-3">
@@ -60,11 +63,11 @@ console.log("Rol actual:", user?.role); // <--- Y ESTO
               <Dropdown align="end">
                 <Dropdown.Toggle variant="light" className="d-flex align-items-center gap-2 border-0 bg-transparent p-0 hide-caret">
                    <div className="text-end d-none d-lg-block">
-                      <div className="small fw-bold">{user.full_name}</div>
-                      <div className="super-small text-muted" style={{ fontSize: '0.7rem' }}>{user.email}</div>
+                      <div className="small fw-bold">{displayName}</div>
+                      <div className="super-small text-muted" style={{ fontSize: '0.7rem' }}>{displayEmail}</div>
                    </div>
                    <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 38, height: 38 }}>
-                      {user.full_name.charAt(0).toUpperCase()}
+                      {firstLetter}
                    </div>
                 </Dropdown.Toggle>
 
