@@ -1,0 +1,60 @@
+/* src/styles/global.css */
+
+/* Importamos una fuente moderna si quieres (opcional) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #0d6efd;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f8f9fa; /* Un gris muy suave de fondo */
+  color: #333;
+}
+
+/* --- UTILIDADES PERSONALIZADAS --- */
+
+/* Ocultar la flecha (caret) predeterminada de Bootstrap en los dropdowns de usuario */
+.hide-caret::after {
+  display: none !important;
+}
+
+/* Texto muy pequeño para detalles */
+.super-small {
+  font-size: 0.75rem;
+}
+
+/* --- ANIMACIONES GLOBALES --- */
+a {
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.btn {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Efecto hover suave para tarjetas */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* --- SCROLLBAR PERSONALIZADO (Chrome/Edge/Safari) --- */
+/* Esto le da el toque "App nativa" */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
