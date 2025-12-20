@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// URL base de tu backend (Asegúrate que coincida con tu .env del backend)
-const BASE_URL = 'http://localhost:3000/api';
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -10,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// INTERCEPTOR 1: Inyectar Token Automáticamente
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -22,12 +20,10 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// INTERCEPTOR 2: Manejar Expiración de Sesión (401)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Si el backend dice "Token inválido", cerramos sesión forzada
+    if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
