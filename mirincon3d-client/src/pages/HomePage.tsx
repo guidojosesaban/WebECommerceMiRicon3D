@@ -5,7 +5,7 @@ import api from '../api/axios';
 import type { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { motion } from 'framer-motion';
-import { Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, SlidersHorizontal} from 'lucide-react';
 
 export const HomePage = () => {
   const [products, setProducts] = useState<Product[]>([]);

@@ -1,4 +1,3 @@
-import React from "react";
 import { Navbar as BSNavbar, Container, Nav, Button, Dropdown, Badge } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, LogOut, Printer, PlusCircle, Package, User as UserIcon } from "lucide-react";

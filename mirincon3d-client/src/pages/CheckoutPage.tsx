@@ -11,7 +11,7 @@ export const CheckoutPage = () => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
+  const { register, handleSubmit, formState: { isSubmitting } } = useForm();
 
   const onSubmit = async (data: any) => {
     try {
