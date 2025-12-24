@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Table, Button, Image, Badge } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Container, Table, Button, Image} from 'react-bootstrap';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
 import type { Product } from '../../types';

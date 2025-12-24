@@ -11,7 +11,6 @@ import {
   ShoppingCart,
   LogOut,
   Printer,
-  PlusCircle,
   Package
 } from 'lucide-react';
 import { motion } from 'framer-motion';
