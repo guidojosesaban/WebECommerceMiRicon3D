@@ -11,6 +11,8 @@ import { CreateProductPage } from "./pages/admin/CreateProductPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
 import { MyOrdersPage } from "./pages/MyOrdersPage";
 import { AdminOrdersPage } from "./pages/admin/AdminOrdersPage";
+import { AdminProductsPage } from "./pages/admin/AdminProductsPage";
+import { EditProductPage } from "./pages/admin/EditProductPage";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
@@ -22,15 +24,19 @@ interface RouteProps {
 
 const ProtectedRoute = ({ children }: RouteProps) => {
   const { isAuthenticated, loading } = useAuth();
+
   if (loading) return null;
   if (!isAuthenticated) return <Navigate to="/login" />;
+
   return <>{children}</>;
 };
 
 const PublicRoute = ({ children }: RouteProps) => {
   const { isAuthenticated, loading } = useAuth();
+
   if (loading) return null;
   if (isAuthenticated) return <Navigate to="/" />;
+
   return <>{children}</>;
 };
 
@@ -59,6 +65,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="orders"
               element={
@@ -77,6 +84,25 @@ function App() {
                 </AdminRoute>
               }
             />
+
+            <Route
+              path="admin/products"
+              element={
+                <AdminRoute>
+                  <AdminProductsPage />
+                </AdminRoute>
+              }
+            />
+
+            <Route
+              path="admin/edit-product/:id"
+              element={
+                <AdminRoute>
+                  <EditProductPage />
+                </AdminRoute>
+              }
+            />
+
             <Route
               path="admin/orders"
               element={
@@ -96,6 +122,7 @@ function App() {
               </PublicRoute>
             }
           />
+
           <Route
             path="/register"
             element={
