@@ -13,6 +13,7 @@ import { MyOrdersPage } from "./pages/MyOrdersPage";
 import { AdminOrdersPage } from "./pages/admin/AdminOrdersPage";
 import { AdminProductsPage } from "./pages/admin/AdminProductsPage";
 import { EditProductPage } from "./pages/admin/EditProductPage";
+import { AdminServicesPage } from "./pages/admin/AdminServicesPage";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
@@ -49,7 +50,7 @@ function App() {
             {/* Home */}
             <Route index element={<HomePage />} />
 
-            {/* Páginas públicas */}
+            {/* Rutas públicas */}
             <Route path="servicios" element={<ServicesPage />} />
             <Route path="contacto" element={<ContactPage />} />
 
@@ -111,9 +112,19 @@ function App() {
                 </AdminRoute>
               }
             />
+
+            {/* NUEVA RUTA ADMIN PARA SERVICIOS */}
+            <Route
+              path="admin/services"
+              element={
+                <AdminRoute>
+                  <AdminServicesPage />
+                </AdminRoute>
+              }
+            />
           </Route>
 
-          {/* Rutas de login / register */}
+          {/* Login / Register */}
           <Route
             path="/login"
             element={

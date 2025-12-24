@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Form, Button, Row, Col, Card, InputGroup } from 'react-bootstrap';
+import { Form, Button, Row, Col, Card, InputGroup, Alert } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import { Trash2, Plus, Image as ImageIcon, Palette, Layers, Tag } from 'lucide-react';
+import { Trash2, Plus, Image as ImageIcon, Palette, Layers, Tag, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Product, ProductColor } from '../../types';
 
 type ProductFormProps = {
-  initialData?: Product; // Opcional: Si viene, es edición
+  initialData?: Product; 
   onSubmit: (data: any) => Promise<void>;
   isSubmitting: boolean;
 };
 
-// Categorías base para ayudar al admin
 const PREDEFINED_CATEGORIES = ['Impresoras', 'Filamentos', 'Resinas', 'Repuestos', 'Servicios', 'Herramientas'];
 
 export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductFormProps) => {
@@ -26,13 +25,26 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
   const [colors, setColors] = useState<ProductColor[]>(initialData?.colors || []);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   
-  // Inputs temporales
   const [tempImg, setTempImg] = useState('');
   const [tempColorName, setTempColorName] = useState('');
   const [tempColorHex, setTempColorHex] = useState('#000000');
 
-  // Observar cambios para lógica visual
+  // --- VIGILANTES (WATCHERS) ---
   const isOnOffer = watch('is_on_offer');
+  const selectedCategory = watch('category'); // <--- Vigilamos la categoría
+
+  // Detectar si es servicio
+  const isService = selectedCategory === 'Servicios';
+
+  // EFECTO: Si selecciona Servicios, forzamos valores y limpiamos
+  useEffect(() => {
+    if (isService) {
+        setValue('price', 0);
+        setValue('stock', 999); // Stock infinito para que no salga "Agotado"
+        setValue('is_on_offer', false);
+        setValue('discount_price', 0);
+    }
+  }, [isService, setValue]);
 
   // Precargar datos al editar
   useEffect(() => {
@@ -40,21 +52,18 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
       reset(initialData);
       setImages(initialData.images || []);
       
-      // Parsear colores si vienen como string desde base de datos vieja
       let parsedColors: ProductColor[] = [];
       if (Array.isArray(initialData.colors)) {
           parsedColors = initialData.colors.map(c => typeof c === 'string' ? JSON.parse(c) : c);
       }
       setColors(parsedColors);
 
-      // Detectar si la categoría guardada NO está en la lista predefinida (es custom)
       if (initialData.category && !PREDEFINED_CATEGORIES.includes(initialData.category)) {
           setIsCustomCategory(true);
       }
     }
   }, [initialData, reset]);
 
-  // --- HANDLERS LISTAS ---
   const addImage = () => { if (tempImg.trim()) { setImages([...images, tempImg]); setTempImg(''); } };
   const removeImage = (index: number) => setImages(images.filter((_, i) => i !== index));
 
@@ -66,13 +75,16 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
   };
   const removeColor = (index: number) => setColors(colors.filter((_, i) => i !== index));
 
-  // --- PREPARAR ENVÍO ---
   const onFormSubmit = (data: any) => {
     const finalData = { ...data, images, colors };
     
-    // Limpieza de datos: Si no está en oferta, el precio descuento debe ser 0
-    if (!data.is_on_offer) {
-        finalData.discount_price = 0;
+    // Seguridad final antes de enviar
+    if (!data.is_on_offer) finalData.discount_price = 0;
+    
+    // Si es servicio, aseguramos lógica de servicio
+    if (data.category === 'Servicios') {
+        finalData.price = 0;
+        finalData.stock = 999;
     }
 
     onSubmit(finalData);
@@ -82,17 +94,15 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
     <Form onSubmit={handleSubmit(onFormSubmit)}>
       <Row>
         <Col md={8}>
-          {/* INFO BÁSICA */}
           <Card className="mb-4 shadow-sm">
             <Card.Header className="bg-white fw-bold">Información Básica</Card.Header>
             <Card.Body>
               <Form.Group className="mb-3">
-                <Form.Label>Título del Producto</Form.Label>
-                <Form.Control {...register("title", { required: true })} placeholder="Ej: Ender 3 V3 SE" />
+                <Form.Label>Título</Form.Label>
+                <Form.Control {...register("title", { required: true })} placeholder="Ej: Impresión 3D a medida" />
               </Form.Group>
               
               <Row>
-                {/* LÓGICA DE CATEGORÍA PERSONALIZADA */}
                 <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Label><Layers size={16}/> Categoría</Form.Label>
@@ -102,7 +112,7 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
                             onChange={(e) => {
                                 if(e.target.value === 'custom') {
                                     setIsCustomCategory(true);
-                                    setValue('category', ''); // Limpiar valor para que escriba
+                                    setValue('category', ''); 
                                 } else {
                                     setValue('category', e.target.value);
                                 }
@@ -118,28 +128,45 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
                                 placeholder="Escribe la nueva categoría..." 
                                 autoFocus
                              />
-                             <Button variant="outline-secondary" onClick={() => setIsCustomCategory(false)}>
-                                Cancelar
-                             </Button>
+                             <Button variant="outline-secondary" onClick={() => setIsCustomCategory(false)}>Cancelar</Button>
                         </InputGroup>
                     )}
                   </Form.Group>
                 </Col>
+
                 <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Label>Stock Real</Form.Label>
-                    <Form.Control type="number" {...register("stock", { required: true })} />
+                    <Form.Control 
+                        type="number" 
+                        {...register("stock", { required: true })} 
+                        disabled={isService} // <--- BLOQUEADO SI ES SERVICIO
+                        className={isService ? 'bg-light text-muted' : ''}
+                    />
+                    {isService && <Form.Text className="text-info small">Stock infinito automático para servicios.</Form.Text>}
                   </Form.Group>
                 </Col>
               </Row>
 
+              {/* AVISO VISUAL SI ES SERVICIO */}
+              {isService && (
+                  <Alert variant="info" className="d-flex align-items-center py-2">
+                      <Info size={18} className="me-2"/>
+                      <span>Al ser un <strong>Servicio</strong>, el precio y stock se gestionan automáticamente (Se solicitará presupuesto).</span>
+                  </Alert>
+              )}
+
               {/* SECCIÓN DE PRECIOS Y OFERTAS */}
-              <div className="bg-light p-3 rounded border mb-3">
+              <div className={`bg-light p-3 rounded border mb-3 ${isService ? 'opacity-50' : ''}`}>
                   <Row className="align-items-center">
                     <Col md={5}>
                         <Form.Group>
                             <Form.Label>Precio Regular ($)</Form.Label>
-                            <Form.Control type="number" {...register("price", { required: true })} />
+                            <Form.Control 
+                                type="number" 
+                                {...register("price", { required: true })} 
+                                disabled={isService} // <--- BLOQUEADO
+                            />
                         </Form.Group>
                     </Col>
                     
@@ -149,21 +176,21 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
                             id="offer-switch"
                             label="¿Oferta?"
                             {...register("is_on_offer")}
+                            disabled={isService} // <--- BLOQUEADO
                             className="fw-bold text-danger"
                         />
                     </Col>
                     
                     <Col md={5}>
-                        {isOnOffer && (
+                        {isOnOffer && !isService && (
                             <motion.div initial={{opacity:0}} animate={{opacity:1}}>
                                 <Form.Group>
                                     <Form.Label className="text-danger fw-bold"><Tag size={16}/> Precio Oferta ($)</Form.Label>
                                     <Form.Control 
                                         type="number" 
-                                        {...register("discount_price", { required: isOnOffer })} 
+                                        {...register("discount_price")} 
                                         className="border-danger bg-white"
                                     />
-                                    <Form.Text className="text-muted small">Debe ser menor al regular</Form.Text>
                                 </Form.Group>
                             </motion.div>
                         )}
@@ -178,7 +205,7 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
             </Card.Body>
           </Card>
 
-          {/* GALERÍA DE IMÁGENES */}
+          {/* GALERÍA */}
           <Card className="mb-4 shadow-sm">
             <Card.Header className="bg-white fw-bold d-flex align-items-center gap-2">
                <ImageIcon size={18}/> Galería de Imágenes
@@ -195,29 +222,22 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
                      <button type="button" className="btn btn-danger btn-sm p-0 position-absolute top-0 end-0" style={{width: 20, height: 20, borderRadius: 0}} onClick={() => removeImage(idx)}>&times;</button>
                    </div>
                  ))}
-                 {images.length === 0 && <span className="text-muted small">Sin imágenes.</span>}
                </div>
             </Card.Body>
           </Card>
         </Col>
 
         <Col md={4}>
-          {/* COLORES */}
+          {/* COLORES (Ocultar si es servicio, opcional, pero mejor dejarlo por si acaso) */}
           <Card className="mb-4 shadow-sm">
             <Card.Header className="bg-white fw-bold d-flex align-items-center gap-2">
                <Palette size={18}/> Variantes de Color
             </Card.Header>
             <Card.Body>
               <Row className="g-2 mb-2">
-                <Col xs={3}>
-                  <Form.Control type="color" value={tempColorHex} onChange={(e) => setTempColorHex(e.target.value)} className="p-1 h-100" />
-                </Col>
-                <Col xs={6}>
-                  <Form.Control placeholder="Nombre" value={tempColorName} onChange={(e) => setTempColorName(e.target.value)} />
-                </Col>
-                <Col xs={3}>
-                  <Button variant="outline-primary" className="w-100" onClick={addColor}>Add</Button>
-                </Col>
+                <Col xs={3}><Form.Control type="color" value={tempColorHex} onChange={(e) => setTempColorHex(e.target.value)} className="p-1 h-100" /></Col>
+                <Col xs={6}><Form.Control placeholder="Nombre" value={tempColorName} onChange={(e) => setTempColorName(e.target.value)} /></Col>
+                <Col xs={3}><Button variant="outline-primary" className="w-100" onClick={addColor}>Add</Button></Col>
               </Row>
               <div className="d-flex flex-column gap-2 mt-3">
                 {colors.map((c, idx) => (

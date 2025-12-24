@@ -35,7 +35,10 @@ export const HomePage = () => {
             ) || []
         }));
 
-        setProducts(parsedProducts);
+        // 3. Filtrar servicios (opcional, si solo quieres ver productos vendibles)
+        const sellableProducts = parsedProducts.filter((p: Product) => p.category !== 'Servicios');
+
+        setProducts(sellableProducts);
       } catch (error) {
         console.error("Error cargando productos", error);
       } finally {
